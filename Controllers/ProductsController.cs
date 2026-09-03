@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MyWebApi.Common;
+using MyWebApi.DTOs;
 using MyWebApi.Models;
 
 namespace MyWebApi.Controllers;
@@ -10,9 +11,9 @@ public class ProductsController : ControllerBase
 {
     private static readonly List<Product> _products = new()
     {
-        new Product { Id = 1, Name = "Product 1", Price = 10.99m },
-        new Product { Id = 2, Name = "Product 2", Price = 19.99m },
-        new Product { Id = 3, Name = "Product 3", Price = 5.99m }
+        new Product { Id = 1, Name = "Product 1", Price = 10.99m, IsActive = true, CreatedDate = DateTime.Now },
+        new Product { Id = 2, Name = "Product 2", Price = 19.99m, IsActive = true, CreatedDate = DateTime.Now },
+        new Product { Id = 3, Name = "Product 3", Price = 5.99m, IsActive = true, CreatedDate = DateTime.Now }
     };
 
     [HttpGet]
@@ -44,20 +45,20 @@ public class ProductsController : ControllerBase
     public IActionResult Create([FromBody] CreateProductDTO dto)
     {
         if (!ModelState.IsValid)
-{
-        var errors = ModelState.Values
-        .SelectMany(v => v.Errors)
-        .Select(e => e.ErrorMessage)
-        .ToList();
+        {
+            var errors = ModelState.Values
+                .SelectMany(v => v.Errors)
+                .Select(e => e.ErrorMessage)
+                .ToList();
 
-        return BadRequest(ApiResponse<object?>.ErrorResponse(
-        "Validation failed",
-        errors));
-}
+            return BadRequest(ApiResponse<object?>.ErrorResponse(
+                "Validation failed",
+                errors));
+        }
 
         var newProduct = new Product
         {
-            Id = _products.Max(p => p.Id) + 1,
+            Id = _products.Count == 0 ? 1 : _products.Max(p => p.Id) + 1,
             Name = dto.Name,
             Description = dto.Description,
             Sku = dto.Sku,
@@ -71,8 +72,11 @@ public class ProductsController : ControllerBase
 
         _products.Add(newProduct);
 
-        return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, ApiResponse<Product>.SuccessResponse(
-            newProduct,
-            "Product created successfully"));
+        return CreatedAtAction(
+            nameof(GetById),
+            new { id = newProduct.Id },
+            ApiResponse<Product>.SuccessResponse(
+                newProduct,
+                "Product created successfully"));
     }
 }
