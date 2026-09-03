@@ -15,3 +15,26 @@ public class ProductDTO
     public DateTime CreatedDate { get; set; }
 
 }
+
+public class CreateProductDTO
+{
+    [Required, StringLength(120, MinimumLength = 2)]
+    public string Name { get; set; } = string.Empty;
+
+    [StringLength(1000)]
+    public string Description { get; set; } = string.Empty;
+
+    [Required, StringLength(40)]
+    public string Sku { get; set; } = string.Empty;
+
+    [Range(0.01, double.MaxValue, ErrorMessage = "Price must be greater than 0")]
+    public decimal Price { get; set; }
+
+    [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
+    public int StockQuantity { get; set; }
+
+    [Required]
+    public int CategoryId { get; set; }
+    
+    public List<string> Tags { get; set; } = new List<string>();
+}

@@ -10,9 +10,8 @@ public class Product
     public int StockQuantity { get; set; }
     public bool InStock => StockQuantity > 0;
     public int CategoryId { get; set; }
-    public string CategoryName { get; set; } = string.Empty;
+    public Category? Category { get; set; }
     public bool IsActive { get; set; }
-    public List <tags> Tags { get; set; } = new List<tags>();
-    public DateTime Created { get; set; } = DateTime.Now;
-    public DateTime? Updated { get; set; }
+    public DateTime CreatedDate { get; set; }
+    public List<ProductTag> ProductTags { get; set; } = new List<ProductTag>();
 }
