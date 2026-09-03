@@ -12,9 +12,6 @@ public class ProductDTO
     public int StockQuantity { get; set; }
     public bool InStock => StockQuantity > 0;
     public int CategoryId { get; set; }
-    public string CategoryName { get; set; } = string.Empty;
-    public bool IsActive { get; set; }
-    public DateTime CreatedDate { get; set; }
     public List<string> Tags { get; set; } = new();
 }
 
