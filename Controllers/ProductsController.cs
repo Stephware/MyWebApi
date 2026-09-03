@@ -15,7 +15,7 @@ public class ProductsController : ControllerBase
     };
 
     [HttpGet]
-    public IActionResult GetAll() => Ok(_products);
+    public IActionResult GetAll() => Ok(ApiResponse<List<Product>>.SuccessResponse(_products, "Products retrieved successfully"));
 
     [HttpGet ("{id}")]
     public IActionResult GetById(int id)
