@@ -19,8 +19,10 @@ public class ProductsController : ControllerBase
     [HttpGet]
     public IActionResult GetAll()
     {
-        return Ok(ApiResponse<List<Product>>.SuccessResponse(
-            _products,
+        var products = _products.Select(ToDto).ToList();
+
+        return Ok(ApiResponse<List<ProductDTO>>.SuccessResponse(
+            products,
             "Products retrieved successfully"));
     }
 
@@ -31,13 +33,13 @@ public class ProductsController : ControllerBase
 
         if (product is null)
         {
-            return NotFound(ApiResponse<Product>.ErrorResponse(
+            return NotFound(ApiResponse<object?>.ErrorResponse(
                 "Product not found",
                 new List<string> { $"No product with ID {id} exists." }));
         }
 
-        return Ok(ApiResponse<Product>.SuccessResponse(
-            product,
+        return Ok(ApiResponse<ProductDTO>.SuccessResponse(
+            ToDto(product),
             "Product retrieved successfully"));
     }
 
@@ -75,8 +77,23 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(
             nameof(GetById),
             new { id = newProduct.Id },
-            ApiResponse<Product>.SuccessResponse(
-                newProduct,
+            ApiResponse<ProductDTO>.SuccessResponse(
+                ToDto(newProduct),
                 "Product created successfully"));
+    }
+
+    private static ProductDTO ToDto(Product product)
+    {
+        return new ProductDTO
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Sku = product.Sku,
+            Price = product.Price,
+            StockQuantity = product.StockQuantity,
+            CategoryId = product.CategoryId,
+            Tags = product.Tags
+        };
     }
 }
