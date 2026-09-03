@@ -22,8 +22,8 @@ public class ProductsController : ControllerBase
     {
         var product = _products.FirstOrDefault(p => p.Id == id);
         if (product == null)
-            return NotFound();
+            return NotFound(ApiResponse<Product>.ErrorResponse("Product not found", new List<string> { $"No product with ID {id} exists." }));
 
-        return Ok(product);
+        return Ok(ApiResponse<Product>.SuccessResponse(product, "Product retrieved successfully"));
     }
 }
