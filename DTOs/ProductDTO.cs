@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace MyWebApi.DTOs;
 
 public class ProductDTO
@@ -9,11 +11,11 @@ public class ProductDTO
     public decimal Price { get; set; }
     public int StockQuantity { get; set; }
     public bool InStock => StockQuantity > 0;
-    public int Category { get; set; }
+    public int CategoryId { get; set; }
     public string CategoryName { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public DateTime CreatedDate { get; set; }
-
+    public List<string> Tags { get; set; } = new();
 }
 
 public class CreateProductDTO
@@ -33,10 +35,10 @@ public class CreateProductDTO
     [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
     public int StockQuantity { get; set; }
 
-    [Required]
+    [Range(1, int.MaxValue, ErrorMessage = "CategoryId must be greater than 0")]
     public int CategoryId { get; set; }
 
-    public List<string> Tags { get; set; } = new List<string>();
+    public List<string> Tags { get; set; } = new();
 }
 
 public class UpdateProductDTO
@@ -53,8 +55,8 @@ public class UpdateProductDTO
     [Range(0, int.MaxValue, ErrorMessage = "Stock quantity cannot be negative")]
     public int StockQuantity { get; set; }
 
-    [Required]
+    [Range(1, int.MaxValue, ErrorMessage = "CategoryId must be greater than 0")]
     public int CategoryId { get; set; }
 
-    public List<string> Tags { get; set; } = new List<string>();
+    public List<string> Tags { get; set; } = new();
 }
