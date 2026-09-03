@@ -15,3 +15,4 @@ public class Product
     public DateTime CreatedDate { get; set; }
     public List<ProductTag> ProductTags { get; set; } = new List<ProductTag>();
 }
+

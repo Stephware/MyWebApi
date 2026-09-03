@@ -39,4 +39,40 @@ public class ProductsController : ControllerBase
             product,
             "Product retrieved successfully"));
     }
+
+    [HttpPost]
+    public IActionResult Create([FromBody] CreateProductDTO dto)
+    {
+        if (!ModelState.IsValid)
+{
+        var errors = ModelState.Values
+        .SelectMany(v => v.Errors)
+        .Select(e => e.ErrorMessage)
+        .ToList();
+
+        return BadRequest(ApiResponse<object?>.ErrorResponse(
+        "Validation failed",
+        errors));
+}
+
+        var newProduct = new Product
+        {
+            Id = _products.Max(p => p.Id) + 1,
+            Name = dto.Name,
+            Description = dto.Description,
+            Sku = dto.Sku,
+            Price = dto.Price,
+            StockQuantity = dto.StockQuantity,
+            CategoryId = dto.CategoryId,
+            IsActive = true,
+            Tags = dto.Tags,
+            CreatedDate = DateTime.Now
+        };
+
+        _products.Add(newProduct);
+
+        return CreatedAtAction(nameof(GetById), new { id = newProduct.Id }, ApiResponse<Product>.SuccessResponse(
+            newProduct,
+            "Product created successfully"));
+    }
 }
