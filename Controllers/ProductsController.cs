@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using MyWebApi.Common;
 using MyWebApi.Models;
 
 namespace MyWebApi.Controllers;
@@ -7,7 +8,7 @@ namespace MyWebApi.Controllers;
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
 {
-    private static readonly List<Product> _products = new List<Product>
+    private static readonly List<Product> _products = new()
     {
         new Product { Id = 1, Name = "Product 1", Price = 10.99m },
         new Product { Id = 2, Name = "Product 2", Price = 19.99m },
@@ -15,15 +16,27 @@ public class ProductsController : ControllerBase
     };
 
     [HttpGet]
-    public IActionResult GetAll() => Ok(ApiResponse<List<Product>>.SuccessResponse(_products, "Products retrieved successfully"));
+    public IActionResult GetAll()
+    {
+        return Ok(ApiResponse<List<Product>>.SuccessResponse(
+            _products,
+            "Products retrieved successfully"));
+    }
 
-    [HttpGet ("{id}")]
+    [HttpGet("{id:int}")]
     public IActionResult GetById(int id)
     {
         var product = _products.FirstOrDefault(p => p.Id == id);
-        if (product == null)
-            return NotFound(ApiResponse<Product>.ErrorResponse("Product not found", new List<string> { $"No product with ID {id} exists." }));
 
-        return Ok(ApiResponse<Product>.SuccessResponse(product, "Product retrieved successfully"));
+        if (product is null)
+        {
+            return NotFound(ApiResponse<Product>.ErrorResponse(
+                "Product not found",
+                new List<string> { $"No product with ID {id} exists." }));
+        }
+
+        return Ok(ApiResponse<Product>.SuccessResponse(
+            product,
+            "Product retrieved successfully"));
     }
 }
