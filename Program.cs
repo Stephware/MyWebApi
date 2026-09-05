@@ -1,17 +1,30 @@
+using MyWebApi.Data;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services
+    .AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Keep validation responses in our ApiResponse format instead of
+        // ASP.NET Core's default validation payload.
+        options.SuppressModelStateInvalidFilter = true;
+    });
 
-builder.Services.AddControllers();
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
-
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// One in-memory store is shared by all requests for the lifetime of the app.
+builder.Services.AddSingleton<InMemoryDataStore>();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+using (var scope = app.Services.CreateScope())
+{
+    scope.ServiceProvider.GetRequiredService<InMemoryDataStore>().Seed();
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
@@ -19,10 +32,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
-
+// HTTPS redirection is intentionally omitted while the local launch profile
+// is HTTP-only. Re-enable it once an HTTPS endpoint is configured.
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();

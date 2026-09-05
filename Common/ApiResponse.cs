@@ -5,7 +5,7 @@ namespace MyWebApi.Common;
 public class ApiResponse<T>
 {
     public bool Success { get; set; }
-    public required string Message { get; set; }
+    public string Message { get; set; } = string.Empty;
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public T? Data { get; set; }
@@ -25,9 +25,9 @@ public class ApiResponse<T>
         };
     }
 
-    public static ApiResponse<T> ErrorResponse(
+    public static ApiResponse<T> FailResponse(
         string message,
-        List<string> errors)
+        List<string>? errors = null)
     {
         return new ApiResponse<T>
         {
@@ -35,5 +35,12 @@ public class ApiResponse<T>
             Message = message,
             Errors = errors
         };
+    }
+
+    public static ApiResponse<T> ErrorResponse(
+        string message,
+        List<string>? errors = null)
+    {
+        return FailResponse(message, errors);
     }
 }

@@ -8,9 +8,9 @@ public class Product
     public string Sku { get; set; } = string.Empty;
     public decimal Price { get; set; }
     public int StockQuantity { get; set; }
-    public bool InStock => StockQuantity > 0;
     public int CategoryId { get; set; }
     public bool IsActive { get; set; }
-    public DateTime CreatedDate { get; set; }
     public List<string> Tags { get; set; } = new();
+    public DateTime Created { get; set; } = DateTime.Now;
+    public DateTime? Updated { get; set; }
 }
