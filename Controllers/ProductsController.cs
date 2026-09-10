@@ -3,6 +3,7 @@ using MyWebApi.Common;
 using MyWebApi.Data;
 using MyWebApi.DTOs;
 using MyWebApi.Models;
+using MyWebApi.Services;
 
 namespace MyWebApi.Controllers;
 
@@ -11,29 +12,31 @@ namespace MyWebApi.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _productService;
+    private readonly InMemoryDataStore _store;
 
-    public ProductsController(IProductService productService)
+    public ProductsController(IProductService productService, InMemoryDataStore store)
     {
         _productService = productService;
+        _store = store;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var products = _store.Products.Values
-            .OrderBy(p => p.Id)
-            .Select(ToDto)
-            .ToList();
+        var products = await _productService.GetAllProductsAsync();
+        var result = products.Select(ToDto).ToList();
 
         return Ok(ApiResponse<List<ProductDTO>>.SuccessResponse(
-            products,
+            result,
             "Products retrieved successfully"));
     }
 
     [HttpGet("{id:int}")]
-    public IActionResult GetById(int id)
+    public async Task<IActionResult> GetById(int id)
     {
-        if (!_store.Products.TryGetValue(id, out var product))
+        var product = await _productService.GetProductByIdAsync(id);
+
+        if (product is null)
         {
             return NotFound(ApiResponse<object?>.FailResponse(
                 "Product not found",
