@@ -21,31 +21,30 @@ public class ProductsController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public IActionResult GetAll()
     {
-        var products = await _productService.GetAllProductsAsync();
-        var result = products.Select(ToDto).ToList();
+        var products = _productService.GetAll();
 
         return Ok(ApiResponse<List<ProductDTO>>.SuccessResponse(
-            result,
+            products,
             "Products retrieved successfully"));
     }
 
     [HttpGet("{id:int}")]
-    public async Task<IActionResult> GetById(int id)
+    public IActionResult GetById(int id)
     {
-        var product = await _productService.GetProductByIdAsync(id);
-
-        if (product is null)
+        try
         {
-            return NotFound(ApiResponse<object?>.FailResponse(
-                "Product not found",
-                new List<string> { $"No product with ID {id} exists." }));
-        }
+            var product = _productService.GetById(id);
 
-        return Ok(ApiResponse<ProductDTO>.SuccessResponse(
-            ToDto(product),
-            "Product retrieved successfully"));
+            return Ok(ApiResponse<ProductDTO>.SuccessResponse(
+                product,
+                "Product retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ApiResponse<object?>.FailResponse(ex.Message));
+        }
     }
 
     [HttpPost]
@@ -91,7 +90,7 @@ public class ProductsController : ControllerBase
             nameof(GetById),
             new { id = product.Id },
             ApiResponse<ProductDTO>.SuccessResponse(
-                ToDto(product),
+                _productService.GetById(product.Id),
                 "Product created successfully"));
     }
 
@@ -134,7 +133,7 @@ public class ProductsController : ControllerBase
         product.Updated = DateTime.Now;
 
         return Ok(ApiResponse<ProductDTO>.SuccessResponse(
-            ToDto(product),
+            _productService.GetById(product.Id),
             "Product updated successfully"));
     }
 
@@ -151,23 +150,5 @@ public class ProductsController : ControllerBase
         return Ok(ApiResponse<object?>.SuccessResponse(
             null,
             "Product deleted successfully"));
-    }
-
-    private ProductDTO ToDto(Product product)
-    {
-        _store.Categories.TryGetValue(product.CategoryId, out var category);
-
-        return new ProductDTO
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Description = product.Description,
-            Sku = product.Sku,
-            Price = product.Price,
-            StockQuantity = product.StockQuantity,
-            CategoryId = product.CategoryId,
-            CategoryName = category?.Name ?? string.Empty,
-            Tags = product.Tags
-        };
     }
 }
