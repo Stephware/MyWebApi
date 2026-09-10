@@ -1,3 +1,4 @@
+using MyWebApi.Common;
 using MyWebApi.Data;
 using MyWebApi.DTOs;
 using MyWebApi.Models;
@@ -16,16 +17,19 @@ public class ProductService : IProductService
     public PagedResult<ProductDTO> GetAllProductsAsync(ProductQueryParameters queryParameters)
     {
         var query = ApplyFilterSearchSort(queryParameters);
+        var totalCount = query.Count;
 
-        var totalCount = query.Count();
         var pageItems = query
             .Skip((queryParameters.PageNumber - 1) * queryParameters.PageSize)
             .Take(queryParameters.PageSize)
+            .Select(ToDTO)
             .ToList();
 
-        var result = PagedResult<ProductDTO>.Create(pageItems, queryParameters.PageNumber, queryParameters.PageSize, totalCount);
-
-        return pagedProducts;
+        return PagedResult<ProductDTO>.Create(
+            pageItems,
+            queryParameters.PageNumber,
+            queryParameters.PageSize,
+            totalCount);
     }
 
     public ProductDTO GetById(int id)
@@ -66,41 +70,46 @@ public class ProductService : IProductService
     {
         var query = _store.Products.Values.AsEnumerable();
 
-        if(!string.IsNullOrEmpty(p.Search))
+        if (!string.IsNullOrWhiteSpace(p.Search))
         {
             var term = p.Search.Trim();
-            query = query.Where(x=>x.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-            x.Description.Contains(term, StringComparison.OrdinalIgnoreCase) ||
-            x.Sku.Contains(term, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(x =>
+                x.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                x.Description.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+                x.Sku.Contains(term, StringComparison.OrdinalIgnoreCase));
         }
-        if(p.CategoryId.HasValue)
+
+        if (p.CategoryId.HasValue)
         {
             query = query.Where(x => x.CategoryId == p.CategoryId.Value);
         }
-        if(p.MinPrice.HasValue)
+
+        if (p.MinPrice.HasValue)
         {
             query = query.Where(x => x.Price >= p.MinPrice.Value);
         }
-        if(p.MaxPrice.HasValue)
+
+        if (p.MaxPrice.HasValue)
         {
             query = query.Where(x => x.Price <= p.MaxPrice.Value);
         }
+
         if (p.InStockOnly == true)
         {
             query = query.Where(x => x.StockQuantity > 0);
         }
-        if (p.IsActive == true)
+
+        if (p.IsActive.HasValue)
         {
-            query = query.Where(x => x.IsActive);
+            query = query.Where(x => x.IsActive == p.IsActive.Value);
         }
 
-
-        query = (p.SortBy?.ToLowerInvariant()) switch
+        query = p.SortBy?.ToLowerInvariant() switch
         {
             "price" => p.SortDescending ? query.OrderByDescending(x => x.Price) : query.OrderBy(x => x.Price),
             "stockquantity" => p.SortDescending ? query.OrderByDescending(x => x.StockQuantity) : query.OrderBy(x => x.StockQuantity),
             "created" => p.SortDescending ? query.OrderByDescending(x => x.Created) : query.OrderBy(x => x.Created),
-            _ => p.SortDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
+            _ => p.SortDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name)
         };
 
         return query.ToList();
