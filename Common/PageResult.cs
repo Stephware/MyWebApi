@@ -12,21 +12,25 @@ public class PaginationMetadata
 
 public class PagedResult<T>
 {
-    public List<T> Items { get; set; } = new List<T>();
-    public PaginationMetadata Pagination { get; set; }
+    public List<T> Items { get; set; } = new();
+    public PaginationMetadata Pagination { get; set; } = new();
 
-    public PageResult(List<T> items, int pageNumber, int pageSize, int totalCount)
+    public static PagedResult<T> Create(
+        List<T> items,
+        int pageNumber,
+        int pageSize,
+        int totalCount)
     {
         return new PagedResult<T>
         {
             Items = items,
             Pagination = new PaginationMetadata
-        {
-            CurrentPage = pageNumber,
-            PageSize = pageSize,
-            TotalCount = totalCount,
-            TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            {
+                CurrentPage = pageNumber,
+                PageSize = pageSize,
+                TotalCount = totalCount,
+                TotalPages = (int)Math.Ceiling(totalCount / (double)pageSize)
+            }
         };
-    }   
     }
 }
