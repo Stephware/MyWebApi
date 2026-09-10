@@ -1,9 +1,9 @@
-using MyWebApi.Models;
+using MyWebApi.DTOs;
 
 namespace MyWebApi.Services;
 
 public interface IProductService
 {
-    Task<List<Product>> GetAllProductsAsync();
-    Task<Product?> GetProductByIdAsync(int id);
+    List<ProductDTO> GetAll();
+    ProductDTO GetById(int id);
 }
