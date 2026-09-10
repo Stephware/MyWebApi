@@ -13,12 +13,19 @@ public class ProductService : IProductService
         _store = store;
     }
 
-    public List<ProductDTO> GetAll()
+    public PagedResult<ProductDTO> GetAllProductsAsync(ProductQueryParameters queryParameters)
     {
-        return _store.Products.Values
-            .OrderBy(p => p.Id)
-            .Select(ToDTO)
+        var query = ApplyFilterSearchSort(queryParameters);
+
+        var totalCount = query.Count();
+        var pageItems = query
+            .Skip((queryParameters.PageNumber - 1) * queryParameters.PageSize)
+            .Take(queryParameters.PageSize)
             .ToList();
+
+        var result = PagedResult<ProductDTO>.Create(pageItems, queryParameters.PageNumber, queryParameters.PageSize, totalCount);
+
+        return pagedProducts;
     }
 
     public ProductDTO GetById(int id)
@@ -53,5 +60,49 @@ public class ProductService : IProductService
             CategoryName = category?.Name ?? "Unknown",
             Tags = product.Tags
         };
+    }
+
+    private List<Product> ApplyFilterSearchSort(ProductQueryParameters p)
+    {
+        var query = _store.Products.Values.AsEnumerable();
+
+        if(!string.IsNullOrEmpty(p.Search))
+        {
+            var term = p.Search.Trim();
+            query = query.Where(x=>x.Name.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+            x.Description.Contains(term, StringComparison.OrdinalIgnoreCase) ||
+            x.Sku.Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+        if(p.CategoryId.HasValue)
+        {
+            query = query.Where(x => x.CategoryId == p.CategoryId.Value);
+        }
+        if(p.MinPrice.HasValue)
+        {
+            query = query.Where(x => x.Price >= p.MinPrice.Value);
+        }
+        if(p.MaxPrice.HasValue)
+        {
+            query = query.Where(x => x.Price <= p.MaxPrice.Value);
+        }
+        if (p.InStockOnly == true)
+        {
+            query = query.Where(x => x.StockQuantity > 0);
+        }
+        if (p.IsActive == true)
+        {
+            query = query.Where(x => x.IsActive);
+        }
+
+
+        query = (p.SortBy?.ToLowerInvariant()) switch
+        {
+            "price" => p.SortDescending ? query.OrderByDescending(x => x.Price) : query.OrderBy(x => x.Price),
+            "stockquantity" => p.SortDescending ? query.OrderByDescending(x => x.StockQuantity) : query.OrderBy(x => x.StockQuantity),
+            "created" => p.SortDescending ? query.OrderByDescending(x => x.Created) : query.OrderBy(x => x.Created),
+            _ => p.SortDescending ? query.OrderByDescending(x => x.Name) : query.OrderBy(x => x.Name),
+        };
+
+        return query.ToList();
     }
 }

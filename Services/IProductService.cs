@@ -4,6 +4,6 @@ namespace MyWebApi.Services;
 
 public interface IProductService
 {
-    List<ProductDTO> GetAll();
+    PagedResult<ProductDTO> GetAllProductsAsync(ProductQueryParameters queryParameters);
     ProductDTO GetById(int id);
 }
