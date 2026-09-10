@@ -18,6 +18,8 @@ builder.Services.AddSwaggerGen();
 // One in-memory store is shared by all requests for the lifetime of the app.
 builder.Services.AddSingleton<InMemoryDataStore>();
 
+builder.Services.AddScoped<IProductService, ProductService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())

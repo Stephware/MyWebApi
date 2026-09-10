@@ -10,15 +10,15 @@ namespace MyWebApi.Controllers;
 [Route("api/[controller]")]
 public class ProductsController : ControllerBase
 {
-    private readonly InMemoryDataStore _store;
+    private readonly IProductService _productService;
 
-    public ProductsController(InMemoryDataStore store)
+    public ProductsController(IProductService productService)
     {
-        _store = store;
+        _productService = productService;
     }
 
     [HttpGet]
-    public IActionResult GetAll()
+    public async Task<IActionResult> GetAll()
     {
         var products = _store.Products.Values
             .OrderBy(p => p.Id)
