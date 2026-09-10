@@ -1,4 +1,5 @@
 using MyWebApi.Data;
+using MyWebApi.DTOs;
 using MyWebApi.Models;
 
 namespace MyWebApi.Services;
@@ -12,18 +13,45 @@ public class ProductService : IProductService
         _store = store;
     }
 
-    public Task<List<Product>> GetAllProductsAsync()
+    public List<ProductDTO> GetAll()
     {
-        var products = _store.Products.Values
+        return _store.Products.Values
             .OrderBy(p => p.Id)
+            .Select(ToDTO)
             .ToList();
-
-        return Task.FromResult(products);
     }
 
-    public Task<Product?> GetProductByIdAsync(int id)
+    public ProductDTO GetById(int id)
     {
-        _store.Products.TryGetValue(id, out var product);
-        return Task.FromResult(product);
+        var product = FindOrThrow(id);
+        return ToDTO(product);
+    }
+
+    private Product FindOrThrow(int id)
+    {
+        if (!_store.Products.TryGetValue(id, out var product))
+        {
+            throw new Exception("Product not found");
+        }
+
+        return product;
+    }
+
+    private ProductDTO ToDTO(Product product)
+    {
+        _store.Categories.TryGetValue(product.CategoryId, out var category);
+
+        return new ProductDTO
+        {
+            Id = product.Id,
+            Name = product.Name,
+            Description = product.Description,
+            Sku = product.Sku,
+            Price = product.Price,
+            StockQuantity = product.StockQuantity,
+            CategoryId = product.CategoryId,
+            CategoryName = category?.Name ?? "Unknown",
+            Tags = product.Tags
+        };
     }
 }
